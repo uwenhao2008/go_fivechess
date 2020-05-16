@@ -1,1 +1,1 @@
-# go_fivechessgo_fivechess
+# go_fivechess
