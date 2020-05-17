@@ -41,13 +41,8 @@ func main() {
 */
 
 // 获取用户输入坐标
-func changeGameMap(chessmap [10][10]string, corXY [2]int, s string) func([2]int, string) [10][10]string {
-	temap := chessmap
-	mapview(temap)
-	return func(corXY [2]int, s string) [10][10]string {
-		temap[corXY[0]][corXY[1]] = s
-		return temap
-	}
+func changeGameMap(chessmap [10][10]string, corXY [2]int, s string) {
+	chessmap[corXY[0]][corXY[1]] = s
 }
 
 // 从控制台获取用户输入的坐标  多个返回值的时候，就因为少了一个逗号浪费了半个小时~~~
@@ -76,12 +71,22 @@ func getPlayerXY(n int) ([2]int, string) {
 	return n
 }*/
 
+func closureChangeMap(chessmap [10][10]string) func([2]int, string) [10][10]string {
+	temap := chessmap
+	return func(arr [2]int, s string) [10][10]string {
+		temap[arr[0]][arr[1]] = s
+		return temap
+	}
+}
+
 // 黑白双方轮流下棋(默认黑棋先走 X)返回下一步下棋的人
 func startChess(chessmap [10][10]string) {
 	for i := 1; i < 10; i++ { // 先循环10次防止死机
 		// 选手走棋函数  解决 判断黑白子选手，以及用户输入的坐标问题
 		arr, str := getPlayerXY(i)
 		// 根据选手操作改变游戏地图
+		startGame ：= closureChangeMap(chessmap)
+		//  这里的闭包 到底怎么关联呢？奇怪了
 		changeGameMap(chessmap, arr, str)
 	}
 }
