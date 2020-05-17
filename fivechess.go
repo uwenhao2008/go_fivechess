@@ -36,6 +36,10 @@ func getPlayerXY(player string) [2]int {
 	return arr
 }
 
+func closurefunc() {
+
+}
+
 // 黑白双方轮流下棋(默认黑棋先走 X)返回下一步下棋的人
 func startChess(chessmap [10][10]string) {
 	var player string
