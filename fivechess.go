@@ -15,10 +15,6 @@ func initChessMap(chessmap [10][10]string) [10][10]string {
 	return chessmap
 }
 
-// func changeGameMap(chessmap [10][10]string, playColor string, corXY [2]int) func(string) [2]int {
-
-// }
-
 /*  闭包函数
 func adder() func(int) int {
 	sum := 1
@@ -41,8 +37,9 @@ func main() {
 */
 
 // 获取用户输入坐标
-func changeGameMap(chessmap [10][10]string, corXY [2]int, s string) {
+func changeGameMap(chessmap [10][10]string, corXY [2]int, s string) [10][10]string {
 	chessmap[corXY[0]][corXY[1]] = s
+	return chessmap
 }
 
 // 从控制台获取用户输入的坐标  多个返回值的时候，就因为少了一个逗号浪费了半个小时~~~
@@ -81,13 +78,17 @@ func closureChangeMap(chessmap [10][10]string) func([2]int, string) [10][10]stri
 
 // 黑白双方轮流下棋(默认黑棋先走 X)返回下一步下棋的人
 func startChess(chessmap [10][10]string) {
+	m := chessmap
 	for i := 1; i < 10; i++ { // 先循环10次防止死机
 		// 选手走棋函数  解决 判断黑白子选手，以及用户输入的坐标问题
 		arr, str := getPlayerXY(i)
 		// 根据选手操作改变游戏地图
-		startGame ：= closureChangeMap(chessmap)
 		//  这里的闭包 到底怎么关联呢？奇怪了
-		changeGameMap(chessmap, arr, str)
+		/*
+			其实不需要使用到闭包，因为这里就是少了一个保存临时变量 m 用于保存用户地图信息
+		*/
+		m = changeGameMap(m, arr, str)
+		mapview(m)
 	}
 }
 
