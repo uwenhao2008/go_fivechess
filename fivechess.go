@@ -5,7 +5,7 @@ import (
 )
 
 func initChessMap(chessmap [10][10]string) [10][10]string {
-	fmt.Println("初始化棋盘如下：")
+	fmt.Println("初始化棋盘如下： \n")
 	for i := 0; i < len(chessmap); i++ {
 		for j := 0; j < len(chessmap[i]); j++ {
 			chessmap[i][j] = "_"
@@ -36,16 +36,16 @@ func main() {
 }
 */
 
-// 获取用户输入坐标
+// 获取用户输入坐标    用户输入的坐标 1 3  在这里才被转换为棋盘上对应的  因为棋盘是从0开始计数
 func changeGameMap(chessmap [10][10]string, corXY [2]int, s string) [10][10]string {
 	chessmap[corXY[0]][corXY[1]] = s
+	mapview(chessmap)
 	return chessmap
 }
 
 // 从控制台获取用户输入的坐标  多个返回值的时候，就因为少了一个逗号浪费了半个小时~~~
 func getPlayerXY(n int) ([2]int, string) {
-	var arr [2]int
-	var temp [2]int
+	var arr, temp [2]int
 	var play string
 	if n%2 == 0 {
 		play = "X" // 黑棋
@@ -55,12 +55,19 @@ func getPlayerXY(n int) ([2]int, string) {
 		fmt.Printf("请%s选手输入落子坐标x,y \n", play)
 	}
 	// 命令行调试专用
-	/*	for i:=0;i<len(arr);i++{
-		arr[i] = consoleStrToInt(os.Args[i+1])
-	}*/
-
+	/*
+			for i:=0;i<len(arr);i++{
+			arr[i] = consoleStrToInt(os.Args[i+1])
+		}
+	*/
 	fmt.Scanf("%d %d \n", &temp[0], &temp[1])
-	arr[0], arr[1] = temp[0]-1, temp[1]-1
+	// 用户的输入习惯是  >=1  不会小于1
+	if temp[0] < 1 || temp[1] < 1 || temp[1] > 10 || temp[1] > 10 {
+		fmt.Printf("输入的落子坐标不合法,请重新输入 \n")
+		getPlayerXY(n)
+	} else {
+		arr[0], arr[1] = temp[0]-1, temp[1]-1
+	}
 	return arr, play
 }
 
@@ -72,38 +79,17 @@ func consoleStrToInt(s string) int{
 }
 */
 
-/*
-func closureChangeMap(chessmap [10][10]string) func([2]int, string) [10][10]string {
-	temap := chessmap
-	return func(arr [2]int, s string) [10][10]string {
-		temap[arr[0]][arr[1]] = s
-		return temap
-	}
-}
-*/
-
 // 落子的坐标有其他棋子
 func isChessValid(chessmap [10][10]string, ordXY [2]int) bool {
 	if chessmap[ordXY[0]][ordXY[1]] != "_" {
-		fmt.Print("棋手落子位置非法")
+		fmt.Print("棋手落子位置非法 \n")
+		return false
+	}
+	if ordXY[0] > 9 || ordXY[0] < 0 || ordXY[1] > 9 || ordXY[1] < 0 {
+		fmt.Print("棋手坐标违法，超出棋盘边界 \n")
 		return false
 	}
 	return true
-}
-
-func isValid(chessmap [10][10]string, ordXY [2]int) bool {
-	// 超出边界
-	if ordXY[0] > 10 || ordXY[0] < 1 || ordXY[1] > 10 || ordXY[1] < 1 {
-		fmt.Print("棋手坐标违法，超出棋盘边界")
-		return false
-	}
-	// 棋手顺序违法  暂时先不考虑这个点
-	// 落子的坐标有其他棋子
-	if isChessValid(chessmap, ordXY) {
-		return true
-	} else {
-		return false
-	}
 }
 
 // 使用结构体
@@ -112,54 +98,65 @@ type FiveChess struct {
 	lineNum int
 }
 
-//  扫描五子棋是否形成  分为 X  Y  斜方向的情况
+//  扫描五子棋是否形成  分为 X  Y  斜方向的情况  游戏结束 返回 false  没有结束返回 true
 func scanWalker(chessmap [10][10]string) bool {
-	for i := 0; i < len(chessmap); i++ {
-		for j := 0; j < len(chessmap[i]); j++ {
-			s := FiveChess{}
+	lenMap := len(chessmap)
+	s := FiveChess{}
+	for i := 0; i < lenMap; i++ {
+		for j := 0; j < lenMap; j++ {
 			s.color = chessmap[i][j]
-			n := 0
-			// 判断 X轴方向五子棋
-			if chessmap[i+1][j] == s.color {
-				n++
-			} else {
-				n = 0
+			if s.color == "_" {
+				continue
 			}
-			// 判断Y轴五子棋
-			if chessmap[i][j+1] == s.color {
-				n++
+			s.lineNum = 0
+			//不能超出棋盘边界  主要是判断i+1>lenMap的情况
+			if i <= lenMap-1 || j <= lenMap-1 {
+				// 判断 Y 轴方向五子棋
+				if chessmap[i+1][j] == s.color {
+					s.lineNum++
+					continue
+				} else {
+					s.lineNum = 0
+				}
+				// 判断 X 轴五子棋
+				if chessmap[i][j+1] == s.color {
+					s.lineNum++
+					continue
+				} else {
+					s.lineNum = 0
+				}
+				// 判断斜线方向
+				if chessmap[i+1][j+1] == s.color {
+					s.lineNum++
+					continue
+				} else {
+					s.lineNum = 0
+				}
+				if s.lineNum == 5 {
+					fmt.Print("GAME is over \n")
+					return false
+				}
 			} else {
-				n = 0
-			}
-			// 判断斜线方向
-			if chessmap[i+1][j+1] == s.color {
-				n++
-			} else {
-				n = 0
-			}
-			if n == 5 {
-				return true
+				continue
 			}
 		}
 	}
-	return false //  无法继续游戏
+	return true //  这里出问题了  例如棋盘只有两个棋子，最后也会进入这条语句
 }
 
-func gameOver(chessmap [10][10]string) bool {
-	// XY轴五子棋未超出棋盘
-	//X 与 Y轴要分开扫描   否则会出错   写一个函数
-	state = scanWalker(chessmap)
+func isGameOver(chessmap [10][10]string) bool {
+	// 棋盘满足获胜条件 返回的false 没有结束返回true
+	state := scanWalker(chessmap)
 	if state {
-		return true
+		return true // 游戏没有结束
 	} else {
 		return false
 	}
 }
 
-func chessRule(chessmap [10][10]string, ordXY [2]int) bool {
-	//	1.不能超出棋盘边界          2.棋盘满足获胜条件
-	if isValid(chessmap, ordXY) && gameOver(chessmap) {
-		return true
+func chessRule(chessmap [10][10]string) bool {
+	if isGameOver(chessmap) {
+		return true //  游戏没有结束 返回true
 	} else {
 		return false
 	}
@@ -171,17 +168,14 @@ func startChess(chessmap [10][10]string) {
 	for i := 1; i < 10; i++ { // 先循环10次防止死机
 		// 选手走棋函数  解决 判断黑白子选手，以及用户输入的坐标问题
 		arr, str := getPlayerXY(i)
-		// 根据选手操作改变游戏地图
-		//  这里的闭包 到底怎么关联呢？奇怪了
-		/*
-			其实不需要使用到闭包，因为这里就是少了一个保存临时变量 m 用于保存用户地图信息
-		*/
-		m = changeGameMap(m, arr, str)
-		state = chessRule(m, arr)
+		if isChessValid(m, arr) { // 落子的位置合法
+			m = changeGameMap(m, arr, str)
+		}
+		state := chessRule(m) //  游戏没有结束返回true
 		if state {
-			mapview(m)
+			continue
 		} else {
-			break
+			fmt.Printf("棋手%s胜利了，祝贺他/她 \n", str)
 		}
 	}
 }
