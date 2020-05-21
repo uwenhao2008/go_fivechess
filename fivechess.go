@@ -133,7 +133,7 @@ func scanWalker(chessmap [10][10]string) bool {
 					s.lineNum = 0
 				}
 				if s.lineNum == 5 {
-					fmt.Print("GAME is over \n")
+					fmt.Print("GAMEOVER \n")
 					return false
 				}
 			} else {
